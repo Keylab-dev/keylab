@@ -1,65 +1,137 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useCallback, useEffect } from "react";
+import KeyboardRenderer from "@/components/KeyboardRenderer";
+import KeycodePicker from "@/components/KeycodePicker";
+import LayerSelector from "@/components/LayerSelector";
+import Toolbar from "@/components/Toolbar";
+import { parseViaDefinition } from "@/lib/parser";
+import { createDefaultKeymap, exportKeymap, importKeymap, downloadJson } from "@/lib/keymap";
+import { ParsedLayout, Keymap, KeyboardDefinition } from "@/types/keyboard";
+
+import defaultKb from "../../keyboards/60-percent.json";
+import defaultKeymapFile from "../../keymaps/default-60.json";
 
 export default function Home() {
+  const [layout, setLayout] = useState<ParsedLayout>(() =>
+    parseViaDefinition(defaultKb as KeyboardDefinition)
+  );
+  const [keymap, setKeymap] = useState<Keymap>(() => defaultKeymapFile.layers);
+  const [activeLayer, setActiveLayer] = useState(0);
+  const [selectedKey, setSelectedKey] = useState<number | null>(null);
+  const [kbName, setKbName] = useState(defaultKb.name);
+
+  const handleKeyClick = useCallback((index: number) => {
+    setSelectedKey((prev) => (prev === index ? null : index));
+  }, []);
+
+  const handleAssign = useCallback(
+    (keycode: string) => {
+      if (selectedKey === null) return;
+      setKeymap((prev) => {
+        const next = prev.map((layer) => [...layer]);
+        next[activeLayer][selectedKey] = keycode;
+        return next;
+      });
+    },
+    [selectedKey, activeLayer]
+  );
+
+  const handleExport = useCallback(() => {
+    const json = exportKeymap("My Keymap", kbName, keymap);
+    downloadJson(json, "keymap.json");
+  }, [keymap, kbName]);
+
+  const handleImport = useCallback(
+    (json: string) => {
+      try {
+        const file = importKeymap(json);
+        // Pad layers to 4 if needed
+        while (file.layers.length < 4) {
+          file.layers.push(
+            Array.from({ length: layout.keys.length }, () => "KC_NO")
+          );
+        }
+        setKeymap(file.layers);
+        setSelectedKey(null);
+        setActiveLayer(0);
+      } catch (e) {
+        alert("Invalid keymap file");
+      }
+    },
+    [layout.keys.length]
+  );
+
+  const handleLoadKeyboard = useCallback((json: string) => {
+    try {
+      const def = JSON.parse(json) as KeyboardDefinition;
+      const parsed = parseViaDefinition(def);
+      setLayout(parsed);
+      setKbName(def.name);
+      setKeymap(createDefaultKeymap(parsed));
+      setSelectedKey(null);
+      setActiveLayer(0);
+    } catch (e) {
+      alert("Invalid keyboard definition file");
+    }
+  }, []);
+
+  // Escape to deselect
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedKey(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      {/* Header */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            ⌨️ KeyLab
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-sm text-zinc-500">
+            Open-source keyboard configurator
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <Toolbar
+          onExport={handleExport}
+          onImport={handleImport}
+          onLoadKeyboard={handleLoadKeyboard}
+        />
+      </div>
+
+      {/* Keyboard name */}
+      <div className="mb-4 flex items-center gap-4">
+        <h2 className="text-lg font-semibold text-zinc-300">{kbName}</h2>
+        <LayerSelector
+          numLayers={keymap.length}
+          activeLayer={activeLayer}
+          onLayerChange={(l) => {
+            setActiveLayer(l);
+            setSelectedKey(null);
+          }}
+        />
+      </div>
+
+      {/* Keyboard */}
+      <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+        <KeyboardRenderer
+          keys={layout.keys}
+          keycodes={keymap[activeLayer]}
+          selectedKey={selectedKey}
+          onKeyClick={handleKeyClick}
+        />
+      </div>
+
+      {/* Keycode picker */}
+      <KeycodePicker
+        selectedKeyIndex={selectedKey}
+        onAssign={handleAssign}
+      />
+    </main>
   );
 }

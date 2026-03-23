@@ -23,6 +23,45 @@ export function exportKeymap(
   return JSON.stringify(file, null, 2);
 }
 
+/** Detect what type of JSON is being imported and then update */
+
+export function importAnyKeymap(json : string): Keymap {
+  const parsed = JSON.parse(json);
+  if(typeof parsed.version === "number" && Array.isArray(parsed.layers)){
+    validateLayers(parsed.layers);
+    return parsed.layers;
+  }
+
+  if(parsed.layers && Array.isArray(parsed.layers)){
+    validateLayers(parsed.layers);
+    return parsed.layers;
+  }
+
+  throw new Error("Invalid keymap format")
+}
+
+/** Function to validate the layers of the JSON file */
+
+function validateLayers(layers : any){
+  if(!Array.isArray(layers)){
+    throw new Error("Layers must be an array");
+  }
+
+  for(const layer of layers){
+    if(!Array.isArray(layer)){
+      throw new Error("Each layer must be an array");
+    }
+
+    for(const key of layer){
+      if(typeof key!== "string"){
+        throw new Error("Keycodes must be strings");
+      }
+    }
+
+  }
+  
+}
+
 /** Parse an imported keymap JSON string */
 export function importKeymap(json: string): KeymapFile {
   const parsed = JSON.parse(json);

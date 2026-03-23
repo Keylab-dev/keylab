@@ -6,7 +6,7 @@ import KeycodePicker from "@/components/KeycodePicker";
 import LayerSelector from "@/components/LayerSelector";
 import Toolbar from "@/components/Toolbar";
 import { parseViaDefinition } from "@/lib/parser";
-import { createDefaultKeymap, exportKeymap, importKeymap, downloadJson } from "@/lib/keymap";
+import { createDefaultKeymap, exportKeymap, importAnyKeymap, downloadJson } from "@/lib/keymap";
 import { ParsedLayout, Keymap, KeyboardDefinition } from "@/types/keyboard";
 
 import defaultKb from "../../keyboards/60-percent.json";
@@ -45,22 +45,36 @@ export default function Home() {
   const handleImport = useCallback(
     (json: string) => {
       try {
-        const file = importKeymap(json);
+        const rawLayers = importAnyKeymap(json);
+        //Normalize layers length to match the current keyboard layout
+        const normalizedLayers = rawLayers.map((layer)=> {
+          const result =[...layer];
+          while(result.length < layout.keys.length){
+            result.push("KC_NO");
+          }
+
+          return result.slice(0,layout.keys.length);
+        })
+        
         // Pad layers to 4 if needed
-        while (file.layers.length < 4) {
-          file.layers.push(
+
+        while (normalizedLayers.length < 4) {
+          normalizedLayers.push(
             Array.from({ length: layout.keys.length }, () => "KC_NO")
           );
         }
-        setKeymap(file.layers);
+        setKeymap(normalizedLayers);
         setSelectedKey(null);
         setActiveLayer(0);
       } catch (e) {
+        console.error(e);
         alert("Invalid keymap file");
       }
     },
     [layout.keys.length]
   );
+
+  
 
   const handleLoadKeyboard = useCallback((json: string) => {
     try {

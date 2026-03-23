@@ -1,12 +1,12 @@
-# Contributing to KeyLab
+# Contributing to Zumap
 
 Thanks for your interest in contributing! Here's how to get started.
 
 ## Development Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/keylab.git
-cd keylab
+git clone https://github.com/zumap/zumap.git
+cd zumap
 npm install
 npm run dev
 ```

@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "KeyLab — Keyboard Configurator",
+  title: "Zumap — Keyboard Configurator",
   description: "Open-source VIA/QMK keyboard configurator",
 };
 

@@ -91,7 +91,7 @@ export default function Home() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            ⌨️ KeyLab
+            ⌨️ Zumap
           </h1>
           <p className="text-sm text-zinc-500">
             Open-source keyboard configurator

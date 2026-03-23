@@ -1,4 +1,4 @@
-# ⌨️ KeyLab
+# ⌨️ Zumap
 
 An open-source, VIA-compatible keyboard configurator for the web. Load any keyboard definition, remap keys visually, and export your keymap — all in the browser.
 
@@ -17,8 +17,8 @@ An open-source, VIA-compatible keyboard configurator for the web. Load any keybo
 ## Getting Started
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/keylab.git
-cd keylab
+git clone https://github.com/zumap/zumap.git
+cd zumap
 npm install
 npm run dev
 ```
@@ -55,7 +55,7 @@ Community contributions of keyboard definitions are very welcome!
 
 ## VIA Compatibility
 
-KeyLab uses the same JSON keyboard definition format as [VIA](https://www.caniusevia.com/). The `layouts.keymap` array follows [KLE](http://keyboard-layout-editor.com) format:
+Zumap uses the same JSON keyboard definition format as [VIA](https://www.caniusevia.com/). The `layouts.keymap` array follows [KLE](http://keyboard-layout-editor.com) format:
 
 - Each sub-array is a row
 - Strings are matrix positions (`"row,col"`)

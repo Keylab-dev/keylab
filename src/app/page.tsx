@@ -45,25 +45,9 @@ export default function Home() {
   const handleImport = useCallback(
     (json: string) => {
       try {
-        const rawLayers = importAnyKeymap(json);
-        //Normalize layers length to match the current keyboard layout
-        const normalizedLayers = rawLayers.map((layer)=> {
-          const result =[...layer];
-          while(result.length < layout.keys.length){
-            result.push("KC_NO");
-          }
-
-          return result.slice(0,layout.keys.length);
-        })
+        const layers = importAnyKeymap(json, layout.keys.length);
         
-        // Pad layers to 4 if needed
-
-        while (normalizedLayers.length < 4) {
-          normalizedLayers.push(
-            Array.from({ length: layout.keys.length }, () => "KC_NO")
-          );
-        }
-        setKeymap(normalizedLayers);
+        setKeymap(layers);
         setSelectedKey(null);
         setActiveLayer(0);
       } catch (e) {
@@ -73,8 +57,6 @@ export default function Home() {
     },
     [layout.keys.length]
   );
-
-  
 
   const handleLoadKeyboard = useCallback((json: string) => {
     try {

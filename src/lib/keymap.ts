@@ -25,50 +25,62 @@ export function exportKeymap(
 
 /** Detect what type of JSON is being imported and then update */
 
-export function importAnyKeymap(json : string): Keymap {
-  const parsed = JSON.parse(json);
-  if(typeof parsed.version === "number" && Array.isArray(parsed.layers)){
-    validateLayers(parsed.layers);
-    return parsed.layers;
+export function importAnyKeymap(
+  json: string,
+  keyCount: number
+): Keymap {
+  let parsed;
+
+  try { 
+    parsed = JSON.parse(json);
+  } catch {
+    throw new Error("Invalid JSON.");
   }
 
-  if(parsed.layers && Array.isArray(parsed.layers)){
+  if (Array.isArray(parsed.layers)) {
     validateLayers(parsed.layers);
-    return parsed.layers;
+    
+    // Normalization logic
+    const normalizedLayers: Keymap = parsed.layers.map((layer: string[]) => {
+      const result = [...layer];
+      while (result.length < keyCount) {
+       result.push("KC_NO");
+      }
+
+      return result.slice(0, keyCount);
+    })
+
+    // Ensure minimum layers
+    while (normalizedLayers.length < NUM_LAYERS) {
+      normalizedLayers.push(
+        Array.from({ length: keyCount }, () => "KC_NO")
+      );
+    }
+
+    return normalizedLayers;
   }
 
-  throw new Error("Invalid keymap format")
+  throw new Error("Invalid keymap format");
 }
 
 /** Function to validate the layers of the JSON file */
 
-function validateLayers(layers : any){
-  if(!Array.isArray(layers)){
+function validateLayers(layers: unknown): asserts layers is Keymap {
+  if (!Array.isArray(layers)) {
     throw new Error("Layers must be an array");
   }
 
-  for(const layer of layers){
-    if(!Array.isArray(layer)){
+  for (const layer of layers) {
+    if (!Array.isArray(layer)) {
       throw new Error("Each layer must be an array");
     }
 
-    for(const key of layer){
-      if(typeof key!== "string"){
+    for (const key of layer) {
+      if (typeof key !== "string") {
         throw new Error("Keycodes must be strings");
       }
     }
-
   }
-  
-}
-
-/** Parse an imported keymap JSON string */
-export function importKeymap(json: string): KeymapFile {
-  const parsed = JSON.parse(json);
-  if (!parsed.layers || !Array.isArray(parsed.layers)) {
-    throw new Error("Invalid keymap file: missing layers array");
-  }
-  return parsed as KeymapFile;
 }
 
 /** Download a string as a file */

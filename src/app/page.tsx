@@ -6,7 +6,7 @@ import KeycodePicker from "@/components/KeycodePicker";
 import LayerSelector from "@/components/LayerSelector";
 import Toolbar from "@/components/Toolbar";
 import { parseViaDefinition } from "@/lib/parser";
-import { createDefaultKeymap, exportKeymap, importAnyKeymap, downloadJson } from "@/lib/keymap";
+import { createDefaultKeymap, exportKeymap, exportToVIA, importAnyKeymap, downloadJson } from "@/lib/keymap";
 import { ParsedLayout, Keymap, KeyboardDefinition } from "@/types/keyboard";
 
 import defaultKb from "../../keyboards/60-percent.json";
@@ -37,9 +37,24 @@ export default function Home() {
     [selectedKey, activeLayer]
   );
 
-  const handleExport = useCallback(() => {
-    const json = exportKeymap("My Keymap", kbName, keymap);
-    downloadJson(json, "keymap.json");
+  const handleExportVIA = useCallback(() => {
+    try {
+      const json = exportToVIA(keymap);
+      downloadJson(json, "via-keymap.json");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to export VIA keymap")
+    }
+  }, [keymap]);
+
+  const handleExportKeylab = useCallback(() => {
+    try {
+      const json = exportKeymap("My Keymap", kbName, keymap);
+      downloadJson(json, "kyelab-keymap.json");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to export keymap")
+    }
   }, [keymap, kbName]);
 
   const handleImport = useCallback(
@@ -94,7 +109,8 @@ export default function Home() {
           </p>
         </div>
         <Toolbar
-          onExport={handleExport}
+          onExportVIA={handleExportVIA}
+          onExportKeylab={handleExportKeylab}
           onImport={handleImport}
           onLoadKeyboard={handleLoadKeyboard}
         />

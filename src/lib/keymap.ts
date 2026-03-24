@@ -13,6 +13,31 @@ export function createDefaultKeymap(layout: ParsedLayout): Keymap {
   );
 }
 
+function trimEmptyLayers(layers: Keymap): Keymap {
+  const trimmed = layers.filter(layer =>
+    layer.some(key => key !== "KC_NO")
+  );
+
+  return trimmed.length > 0 ? trimmed : layers.slice(0,1);
+}
+
+/** Export to VIA format */
+export function exportToVIA(layers: Keymap): string {
+  if (!Array.isArray(layers)) {
+    throw new Error("Invalid keymap format")
+  }
+
+  //validating again
+  validateLayers(layers)
+
+  const viaFormat = {
+    version: 1,
+    layers: trimEmptyLayers(layers),
+  }
+
+  return JSON.stringify(viaFormat, null, 2);
+}
+
 /** Export keymap as a downloadable JSON file */
 export function exportKeymap(
   name: string,

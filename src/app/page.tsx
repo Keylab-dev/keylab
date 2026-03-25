@@ -50,7 +50,7 @@ export default function Home() {
   const handleExportKeylab = useCallback(() => {
     try {
       const json = exportKeymap("My Keymap", kbName, keymap);
-      downloadJson(json, "kyelab-keymap.json");
+      downloadJson(json, "zumap-keymap.json");
     } catch (e) {
       console.error(e);
       alert("Failed to export keymap")

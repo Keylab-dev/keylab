@@ -13,6 +13,31 @@ export function createDefaultKeymap(layout: ParsedLayout): Keymap {
   );
 }
 
+function trimEmptyLayers(layers: Keymap): Keymap {
+  const trimmed = layers.filter(layer =>
+    layer.some(key => key !== "KC_NO")
+  );
+
+  return trimmed.length > 0 ? trimmed : layers.slice(0,1);
+}
+
+/** Export to VIA format */
+export function exportToVIA(layers: Keymap): string {
+  if (!Array.isArray(layers)) {
+    throw new Error("Invalid keymap format")
+  }
+
+  //validating again
+  validateLayers(layers)
+
+  const viaFormat = {
+    version: 1,
+    layers: trimEmptyLayers(layers),
+  }
+
+  return JSON.stringify(viaFormat, null, 2);
+}
+
 /** Export keymap as a downloadable JSON file */
 export function exportKeymap(
   name: string,
@@ -23,13 +48,64 @@ export function exportKeymap(
   return JSON.stringify(file, null, 2);
 }
 
-/** Parse an imported keymap JSON string */
-export function importKeymap(json: string): KeymapFile {
-  const parsed = JSON.parse(json);
-  if (!parsed.layers || !Array.isArray(parsed.layers)) {
-    throw new Error("Invalid keymap file: missing layers array");
+/** Detect what type of JSON is being imported and then update */
+
+export function importAnyKeymap(
+  json: string,
+  keyCount: number
+): Keymap {
+  let parsed;
+
+  try { 
+    parsed = JSON.parse(json);
+  } catch {
+    throw new Error("Invalid JSON.");
   }
-  return parsed as KeymapFile;
+
+  if (Array.isArray(parsed.layers)) {
+    validateLayers(parsed.layers);
+    
+    // Normalization logic
+    const normalizedLayers: Keymap = parsed.layers.map((layer: string[]) => {
+      const result = [...layer];
+      while (result.length < keyCount) {
+       result.push("KC_NO");
+      }
+
+      return result.slice(0, keyCount);
+    })
+
+    // Ensure minimum layers
+    while (normalizedLayers.length < NUM_LAYERS) {
+      normalizedLayers.push(
+        Array.from({ length: keyCount }, () => "KC_NO")
+      );
+    }
+
+    return normalizedLayers;
+  }
+
+  throw new Error("Invalid keymap format");
+}
+
+/** Function to validate the layers of the JSON file */
+
+function validateLayers(layers: unknown): asserts layers is Keymap {
+  if (!Array.isArray(layers)) {
+    throw new Error("Layers must be an array");
+  }
+
+  for (const layer of layers) {
+    if (!Array.isArray(layer)) {
+      throw new Error("Each layer must be an array");
+    }
+
+    for (const key of layer) {
+      if (typeof key !== "string") {
+        throw new Error("Keycodes must be strings");
+      }
+    }
+  }
 }
 
 /** Download a string as a file */

@@ -4,11 +4,28 @@ Thanks for your interest in contributing! Here's how to get started.
 
 ## Development Setup
 
+### Prerequisites
+
+- Node.js 20 or newer
+- npm 10 or newer
+- Git
+
 ```bash
-git clone https://github.com/zumap/zumap.git
-cd zumap
+git clone https://github.com/Keylab-dev/keylab.git
+cd keylab
 npm install
 npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to test changes locally.
+
+### Validation
+
+Run these before submitting a pull request:
+
+```bash
+npm run lint
+npm run build
 ```
 
 ## Ways to Contribute
@@ -37,8 +54,8 @@ Check the roadmap in README.md. Open an issue to discuss before starting large c
 1. Fork and create a feature branch
 2. Make your changes
 3. Test locally with `npm run dev`
-4. Run `npm run build` to check for errors
-5. Submit a PR with a clear description
+4. Run `npm run lint` and `npm run build`
+5. Submit a PR with a clear description, screenshots for UI changes, and any manual test notes
 
 ## Keyboard Definition Guidelines
 

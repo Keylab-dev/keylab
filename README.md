@@ -16,14 +16,36 @@ An open-source, VIA-compatible keyboard configurator for the web. Load any keybo
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js 20 or newer
+- npm 10 or newer
+- Git
+
 ```bash
-git clone https://github.com/zumap/zumap.git
-cd zumap
+git clone https://github.com/Keylab-dev/keylab.git
+cd keylab
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Development Commands
+
+```bash
+npm run dev      # Start the local Next.js development server
+npm run lint     # Run ESLint
+npm run build    # Create a production build
+npm run start    # Serve the production build after npm run build
+```
+
+Before opening a pull request, run:
+
+```bash
+npm run lint
+npm run build
+```
 
 ## Project Structure
 
@@ -43,6 +65,12 @@ src/
     parser.ts    → VIA JSON → renderable layout parser
   types/         → TypeScript type definitions
 ```
+
+### Architecture Overview
+
+Zumap is a client-side Next.js app. The UI lives in `src/components/`, route-level pages live in `src/app/`, and the
+keyboard/keymap logic lives in `src/lib/`. VIA keyboard definition files are loaded from `keyboards/`, while reusable
+keymap presets live in `keymaps/`.
 
 ## Adding a Keyboard
 
